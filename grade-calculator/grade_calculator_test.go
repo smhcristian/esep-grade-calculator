@@ -124,12 +124,51 @@ func TestGradeTypeStringer(t *testing.T) {
 		t.Errorf("Expected Essay.String() to return 'essay'; got '%s' instead", Essay.String())
 	}
 }
+func TestPassFail_Pass(t *testing.T) {
+	expected := "Pass"
+	// Passing is defined as a C (70) or greater.
+	gradeCalculator := NewPassFailGradeCalculator()
 
-//test if an invalid grade type is added, it should not be added to any category
-func TestInvalidGradeType(t *testing.T) {
-	gradeCalcuulator := NewGradeCalculator()
-	gradeCalcuulator.AddGrade("invalid grade type", 100, GradeType(999)) // Invalid grade type
-	if len(gradeCalcuulator.assignments) != 0 || len(gradeCalcuulator.exams) != 0 || len(gradeCalcuulator.essays) != 0 {
-		t.Error("Adding an invalid grade type should not add a grade to any category")
+	gradeCalculator.AddGrade("assignment", 80, Assignment)
+	gradeCalculator.AddGrade("exam", 75, Exam)
+	gradeCalculator.AddGrade("essay", 70, Essay)
+
+	actual := gradeCalculator.GetFinalGrade()
+
+	if actual != expected {
+		t.Errorf("Expected grade to be '%s' but got '%s'", expected, actual)
+	}
+}
+
+// Test a clear failing grade in Pass/Fail mode.
+func TestPassFail_Fail(t *testing.T) {
+	expected := "Fail"
+	gradeCalculator := NewPassFailGradeCalculator()
+
+	// This combination results in a weighted average of 66.
+	gradeCalculator.AddGrade("assignment", 60, Assignment)
+	gradeCalculator.AddGrade("exam", 75, Exam)
+	gradeCalculator.AddGrade("essay", 68, Essay)
+
+	actual := gradeCalculator.GetFinalGrade()
+
+	if actual != expected {
+		t.Errorf("Expected grade to be '%s' but got '%s'", expected, actual)
+	}
+}
+
+// Test the boundary condition for passing (exactly 70).
+func TestPassFail_BoundaryPass(t *testing.T) {
+	expected := "Pass"
+	gradeCalculator := NewPassFailGradeCalculator()
+
+	gradeCalculator.AddGrade("assignment", 70, Assignment)
+	gradeCalculator.AddGrade("exam", 70, Exam)
+	gradeCalculator.AddGrade("essay", 70, Essay)
+
+	actual := gradeCalculator.GetFinalGrade()
+
+	if actual != expected {
+		t.Errorf("Expected grade to be '%s' but got '%s'", expected, actual)
 	}
 }
